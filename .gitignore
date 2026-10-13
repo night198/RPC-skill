@@ -1,0 +1,31 @@
+# Credentials and private configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+auth.json
+credentials.json
+models.json
+.npmrc
+
+# Private OMP runtime state
+.omp/
+sessions/
+evidence/
+*.jsonl
+*.log
+会话台账.md
+开发进度.md
+进度交接.md
+
+# Local backups and machine artifacts
+*.bak
+*.tmp
+*~
+backup/
+backups/
+.DS_Store
+Thumbs.db
