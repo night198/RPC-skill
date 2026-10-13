@@ -17,24 +17,22 @@ description: 主会话通过原生 JSONL RPC 驱动可持久化的独立 OMP 开
 | 思考档位 | {{THINKING_LEVEL}} |
 | Fast 是否启用 | {{FAST_MODE_ENABLED}} |
 | Fast 是否要求实际 active | {{FAST_MODE_ACTIVE_REQUIRED}} |
-| 有效上下文窗口，token 整数 | {{CONTEXT_WINDOW_TOKENS}} |
-| extended-context 是否启用 | {{EXTENDED_CONTEXT_ENABLED}} |
 | shake 触发百分比 | {{SHAKE_THRESHOLD_PERCENT}} |
 | compact 触发百分比 | {{COMPACT_THRESHOLD_PERCENT}} |
 | 停止派发百分比 | {{STOP_THRESHOLD_PERCENT}} |
 | 压缩后可继续派发的占用上限 | {{RESUME_THRESHOLD_PERCENT}} |
 
-百分比统一使用 0–100 的单位。要求 `0 < RESUME < SHAKE < COMPACT < STOP < 100`。模型、模式和窗口均为真实运行条件，不是文字声明。每次启动、恢复、切换模型后重新核对。配置不支持或无法验证时停止，不自动降级或换收费渠道，不修改全局默认模型。
+百分比统一使用 0–100 的单位。要求 `0 < RESUME < SHAKE < COMPACT < STOP < 100`。模型和模式须核对真实运行状态；每次启动、恢复、切换模型后重新核对。配置不支持或无法验证时停止，不自动降级或换收费渠道，不修改全局默认模型。
 
-GPT 项目必须关闭 OMP 的 `extended-context`，使用常规 272k 窗口，禁止使用 1m。由安装 Agent 核对当前版本的真实配置键和模型窗口定义后填入 token 整数；不能通过改显示数字伪造窗口。所有 GPT 主控及执行会话都适用。超过 500k 后明显变慢、遗忘和注意力分散是本方法提供者的使用经验，不是所有模型的统一硬件边界。
+上下文窗口大小和 `extended-context` 由用户及其运行环境控制，不属于本 Skill 的安装参数或准入门禁。主控、开发和审查会话沿用用户配置，不设固定 token 上限、不强制开关、不因无法读取窗口设置而阻止运行，也不为了符合 Skill 自动修改相关配置。
 
 ### 最小初始化流程
 
 1. 核对当前 OS、OMP 可执行文件/版本、CLI 帮助、Skills 发现目录及可信项目配置。只查看必要非秘密字段，不读取认证文件或私有模型配置正文。
-2. 向用户集中确认上表全部参数、安装位置、配置作用范围与模型费用授权。Fast active required=true 时 enabled 必须 true；窗口和模式不支持或无法核实时停止。
+2. 向用户集中确认上表全部参数、安装位置、配置作用范围与模型费用授权。Fast active required=true 时 enabled 必须 true；模型模式不支持或无法核实时停止。
 3. 已有安装先比较并备份，不覆盖未知修改。只在已授权范围落实运行配置；持久化设置另行确认，不改全局默认模型。
 4. 将完整 `omp-rpc-dev` 目录复制到实际 Skills 目录，仅替换目标 SKILL.md 中所有 `{{…}}`。核对参数类型、阈值顺序、frontmatter 名称及本地链接；源模板保留占位符。
-5. 新开或重新加载 OMP，确认发现本 Skill；按 [RPC 操作参考](references/rpc-control.md) 在私有隔离工作区做无模型调用探针，核对 session、模型、思考/Fast、有效窗口、extended-context、占用、工具及 settled 状态。
+5. 新开或重新加载 OMP，确认发现本 Skill；按 [RPC 操作参考](references/rpc-control.md) 在私有隔离工作区做无模型调用探针，核对 session、模型、思考/Fast、占用、工具及 settled 状态。
 6. 记录参数、安装/备份路径、配置作用范围、实际通过与未验证项。模型请求验收需先获得测试调用及费用授权；任何必要检查失败都不派发业务开发。
 
 ## 1. 开始前
@@ -42,7 +40,7 @@ GPT 项目必须关闭 OMP 的 `extended-context`，使用常规 272k 窗口，�
 1. 用户已选择 RPC 开发方式。核对绝对项目路径、OMP 实际可执行文件/版本、项目规则、现有差异、允许文件与工具、有效 Spec、模型授权。
 2. 在项目外的私有持久目录保存原生 sessions、[进度与交接](references/session-record.md)及证据。不同项目/批次不共用 session；Skill 目录不存项目状态或秘密。
 3. 先检查旧台账。存在未解决写入者、失联任务或待验收结果时，先核对现场，不新开同文件写入者。
-4. 按 [RPC 操作参考](references/rpc-control.md) 连接。先做无模型调用的状态检查，报告真实 sessionId、精确 sessionFile、模型、思考/Fast 模式、有效窗口、extended-context、占用、工具范围和空闲状态。无法核实的字段标记未验证并暂停。
+4. 按 [RPC 操作参考](references/rpc-control.md) 连接。先做无模型调用的状态检查，报告真实 sessionId、精确 sessionFile、模型、思考/Fast 模式、占用、工具范围和空闲状态。必要状态无法核实时标记未验证并暂停；窗口及扩展上下文不在此门禁内。
 
 沿用可信项目 Profile，不继承无关生产/书籍 Profile。扩展默认不加载，需要的逐项确认。保留项目规则及开发 Skills。实际 `dumpTools` 需核对；提示词和工具清单不能当作操作系统沙箱。
 
@@ -115,7 +113,7 @@ commit、push、创建远程仓库、生产部署或重启分别需要明确授�
 
 ## 4. 上下文策略
 
-派发前、切片完成后、大量输出后检查 `get_state.contextUsage.percent`；窗口大小另外核实。占用缺失或不可解释时检查当前版本接口，仍无法取得可靠值就暂停，不能当作 0%。
+派发前、切片完成后、大量输出后检查 `get_state.contextUsage.percent`，采用当前环境返回的百分比，不另行规定或修改窗口。占用缺失或不可解释时检查当前版本接口，仍无法取得可靠值就暂停，不能当作 0%。
 
 | 条件 | 空闲安全边界动作 |
 |---|---|

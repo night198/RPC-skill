@@ -16,7 +16,7 @@
 
 恢复追加 `--resume <exact-session-file>`。Profile 按项目明确选择。不要用裸 --continue、最近会话、模糊 id 找恢复目标；不得使用 --no-session。不要默认 --no-rules、--no-skills、--auto-approve、yolo。所需 LSP 保留；只有明确不需要时才 --no-lsp。
 
-启动前落实初始化表的 extended-context 和窗口设置。先查当前版本实际键及作用范围，优先使用本次运行或项目限定配置；不编造 `--extended-context` 开关，不通过减小显示值假装关闭扩展。涉及持久化设置需用户确认。Fast 的设置由连接后 RPC 完成，不能把 `--thinking` 或 `--service-tier` 等同于 Fast。
+上下文窗口大小及扩展上下文沿用用户运行配置，启动、恢复和切换模型时不按 Skill 改写，不要求读取这些设置作为准入证据。Fast 的设置由连接后 RPC 完成，不能把 `--thinking` 或 `--service-tier` 等同于 Fast。持久化设置仍需用户确认。
 
 只核对继承环境的相关变量名和已知非秘密绑定；清理主控递归/session、无关生产/Profile 绑定。保留 HOME、PATH 及既有认证来源，不读取或复制秘密；不修改主控全局环境。显式允许必要项目变量。
 
@@ -40,7 +40,7 @@ stdin/stdout 用 UTF-8，一行一个 JSON 对象，每条请求唯一 id，发�
 {"id":"state-before","type":"get_state"}
 ```
 
-核对 sessionId、精确 sessionFile、model.provider/id、思考档位、Fast enabled/active、contextUsage.percent、空闲和队列。在当前 RPC 定义中确认这些字段；窗口与 extended-context 如果 state 不提供，使用当前版本的模型元数据和已生效配置证据，不编造字段。
+核对 sessionId、精确 sessionFile、model.provider/id、思考档位、Fast enabled/active、contextUsage.percent、空闲和队列。在当前 RPC 定义中确认这些字段，不编造字段；窗口或扩展上下文字段缺失不构成连接失败。
 
 Fast 请求必须由已确认的布尔参数构造，不直接发送占位字符串。例如控制端先把 SKILL.md 参数表解析为 `config`，校验 `config.fastModeEnabled` 类型后构造：
 
@@ -92,7 +92,7 @@ compact 按同 id 响应判断，不等待开发 prompt_result；可能调用模
 
 内核/管道丢失时，新父进程通常不能重新附着旧 stdin。核对启动时间、可执行文件、命令行、session 目录和当前活动，不仅看 PID。未确认旧写入者停止前不启动第二个写入者。
 
-旧进程安全停止后可精确恢复 sessionFile，核对 sessionId、模型、模式、窗口、占用、队列。需要新上下文则保留旧 session，另开新 session，只提供有效交接、Spec 与必要源码，不重新灌整份历史。
+旧进程安全停止后可精确恢复 sessionFile，核对 sessionId、模型、模式、占用、队列，沿用用户窗口配置。需要新上下文则保留旧 session，另开新 session，只提供有效交接、Spec 与必要源码，不重新灌整份历史。
 
 ## 当前版本核对入口
 
