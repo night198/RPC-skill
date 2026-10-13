@@ -64,7 +64,7 @@ const request = {id: "fast-config", type: "set_fast_mode", enabled: config.fastM
 2. 等待同 id prompt_result，分别处理 completed/error/aborted。
 3. 检查 sessionSettled；未 settled 时等事件，再读取 state 确认 isSettled、无流式输出、压缩、队列或异步任务。
 4. 仅在该请求确认 completed 且 settled 后获取 get_last_assistant_text。禁止拿上一轮文字冒充本片结果。
-5. 固定本片候选版本，完成适用的独立审查；主控处置发现，完成集成和行为验收并写入进度，才解锁依赖片。无关分支可继续，不能把某一会话完成当作整批完成。
+5. 固定本片候选版本，完成适用静态审查；主控处置当前阶段阻断发现、集成并记静态接收，即可解锁依赖片。功能闭环齐备后再集中冒烟、按环境加固并定向回归，不逐片重复运行。不能把某一会话 completed 或静态接收当成功能通过。
 
 转向用 steer；用户明确立即停止时用 abort。abort 响应后仍需等停止并检查已发生副作用。模型失败保留脱敏类别/HTTP 状态和真实文件状态，不套无限重试。超时不能证明未执行。
 
