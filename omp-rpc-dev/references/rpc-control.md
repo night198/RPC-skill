@@ -30,6 +30,10 @@ stdin/stdout 用 UTF-8，一行一个 JSON 对象，每条请求唯一 id，发�
 
 可按当前接口用 set_event_filter 和 messageUpdates: "delta" 减小缓冲；不得过滤掉回合结果、settled 或交互请求。
 
+并发时为每个进程维护独立管道、sessionId/sessionFile 与请求状态，按 `(sessionId, request id)` 关联响应和事件；不得把另一个会话的 completed、settled 或最后文本当成本片结果。主控统一持有各 stdin，持续消费所有会话输出，不能等待一个长回合时停读其余管道。并发额度、文件/资源所有权与就绪门禁见 [Skill](../SKILL.md)，它们由主控维护，不能假定 OMP 自动调度。
+
+审查 RPC 同样先做配置、工具与状态检查，独立保存 session；启动边界另加“仅审查指定版本、默认只读、不得编辑业务代码或正式台账、不得调度或批准发布”。核对真实工具能力；可写入的复现命令需主控授权隔离环境。审查报告受理/返回也不等于主控验收。
+
 ## 无模型调用检查
 
 ```json
@@ -60,7 +64,7 @@ const request = {id: "fast-config", type: "set_fast_mode", enabled: config.fastM
 2. 等待同 id prompt_result，分别处理 completed/error/aborted。
 3. 检查 sessionSettled；未 settled 时等事件，再读取 state 确认 isSettled、无流式输出、压缩、队列或异步任务。
 4. 仅在该请求确认 completed 且 settled 后获取 get_last_assistant_text。禁止拿上一轮文字冒充本片结果。
-5. 主控审查和行为验收，写入进度，才推进依赖片。
+5. 固定本片候选版本，完成适用的独立审查；主控处置发现，完成集成和行为验收并写入进度，才解锁依赖片。无关分支可继续，不能把某一会话完成当作整批完成。
 
 转向用 steer；用户明确立即停止时用 abort。abort 响应后仍需等停止并检查已发生副作用。模型失败保留脱敏类别/HTTP 状态和真实文件状态，不套无限重试。超时不能证明未执行。
 
